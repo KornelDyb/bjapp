@@ -5,5 +5,5 @@
 - **Do sprawdzenia na PC:** czy `python -m app` otwiera okno WebView2 i w stopce jest „Połączono · v0.1.0” (w chmurze nie ma okna — sprawdzone w Chromium).
 - **Dalej:** BJ-01 Silnik gry (logika, bez pytań). Przed BJ-02: zasady w Twoim kasynie.
 - **Otwarte pytania:** BJ-02 kasyno/zasady · BJ-03 „dlaczego” 1 zdanie czy rozwijane · BJ-07 próg mapy błędów (50?).
-- **Repo:** lokalny git, jeszcze bez remote — trzeba założyć `trener-blackjack` na GitHubie i podpiąć.
+- **Repo:** https://github.com/KornelDyb/bjapp (publiczne), gałąź `main`.
 - **Uruchomienie:** `python -m app` · testy: `python -m pytest` (w chmurze: `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium`).

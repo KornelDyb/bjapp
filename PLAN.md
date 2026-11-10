@@ -122,3 +122,4 @@ Cała logika w Pythonie i testowana; frontend tylko wyświetla i wysyła akcje p
 | 10.11.2026 | Nawigacja: pasek boczny z ikonami | Wybór użytkownika |
 | 10.11.2026 | **Zmiana:** budowa w Claude Code w chmurze (Linux), nie na PC; okno pywebview i .exe weryfikowane na PC po `git pull` | Wybór użytkownika; logika i testy niezależne od systemu, UI podglądane w przeglądarce |
 | 10.11.2026 | Ścieżka danych: `%APPDATA%\TrenerBlackjack` na Windows, `~/.local/share/TrenerBlackjack` gdzie indziej, nadpisywalna `TRENER_BJ_DATA_DIR` | Testy i budowa w chmurze; decyzja Claude'a (techniczna) |
+| 10.11.2026 | Repo: `KornelDyb/bjapp` zamiast `trener-blackjack` | Wybór użytkownika (repo już założone) |
