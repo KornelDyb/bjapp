@@ -1,0 +1,5 @@
+pywebview>=5.0
+
+# deweloperskie
+pytest>=8.0
+playwright>=1.45  # testy e2e UI (opcjonalne; bez niego są pomijane)

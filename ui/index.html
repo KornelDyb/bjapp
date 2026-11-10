@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pl">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Trener Blackjacka</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <aside class="sidebar" aria-label="Nawigacja">
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">21</div>
+      <div class="brand-text">Trener<br><strong>Blackjacka</strong></div>
+    </div>
+    <nav class="nav">
+      <button class="nav-item" data-screen="table" title="Stół">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="11" height="15" rx="2"/><path d="M10 4.5 17.8 3a2 2 0 0 1 2.3 1.6l2 11.3a2 2 0 0 1-1.6 2.3L16 19"/></svg>
+        <span>Stół</span>
+      </button>
+      <button class="nav-item" data-screen="counting" title="Liczenie">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16M4 15h16M10 3 8 21M16 3l-2 18"/></svg>
+        <span>Liczenie</span>
+      </button>
+      <button class="nav-item" data-screen="stats" title="Statystyki">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>
+        <span>Statystyki</span>
+      </button>
+      <button class="nav-item" data-screen="simulation" title="Symulacja">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 17l5-6 4 3 4-7 5 5"/><path d="M3 21h18"/></svg>
+        <span>Symulacja</span>
+      </button>
+      <button class="nav-item" data-screen="cheatsheet" title="Ściąga (C)">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg>
+        <span>Ściąga</span>
+      </button>
+      <button class="nav-item" data-screen="settings" title="Ustawienia">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>
+        <span>Ustawienia</span>
+      </button>
+    </nav>
+    <footer class="sidebar-foot">
+      <span class="status-dot" id="status-dot"></span>
+      <span id="status-text">Łączenie…</span>
+    </footer>
+  </aside>
+
+  <main class="content" id="content" tabindex="-1"></main>
+
+  <template id="tpl-table">
+    <header class="screen-head">
+      <div>
+        <h1>Stół</h1>
+        <p class="muted">6 talii · krupier stoi na miękkich 17 · blackjack 3:2</p>
+      </div>
+      <div class="chips">
+        <div class="chip glass"><span class="muted">Trafność</span><strong class="num">—</strong></div>
+        <div class="chip glass"><span class="muted">Running</span><strong class="num">0</strong></div>
+        <div class="chip glass"><span class="muted">True</span><strong class="num">0,0</strong></div>
+      </div>
+    </header>
+    <section class="felt glass">
+      <div class="hand-slot"><span class="muted label">Krupier</span><div class="card-row"><div class="card ghost"></div><div class="card ghost back"></div></div></div>
+      <div class="felt-msg">
+        <p class="lead">Stół rusza w BJ-03</p>
+        <p class="muted">Szkielet gotowy. Teraz silnik gry (BJ-01) i strategia (BJ-02).</p>
+      </div>
+      <div class="hand-slot"><div class="card-row"><div class="card ghost"></div><div class="card ghost"></div></div><span class="muted label">Ty</span></div>
+    </section>
+    <footer class="actions">
+      <button class="btn" disabled><kbd>H</kbd> Dobierz</button>
+      <button class="btn" disabled><kbd>S</kbd> Stój</button>
+      <button class="btn" disabled><kbd>D</kbd> Podwój</button>
+      <button class="btn" disabled><kbd>P</kbd> Rozdziel</button>
+      <button class="btn" disabled><kbd>R</kbd> Poddaj</button>
+    </footer>
+  </template>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
