@@ -1,9 +1,9 @@
 # PROGRESS
 
-- **Bieżący:** F-00 Szkielet aplikacji — 👀 czeka na akceptację (testy 16/16 zielone).
-- **Ostatnia sesja (10.11.2026, chmura):** PLAN/FEATURES z PRD; baza SQLite (5 tabel), Api z obsługą błędów i logiem, UI Midnight glass z paskiem bocznym (6 ekranów), Inter lokalnie, serwer podglądu `tools/dev_server.py`, testy jednostkowe + e2e (Playwright).
-- **Do sprawdzenia na PC:** czy `python -m app` otwiera okno WebView2 i w stopce jest „Połączono · v0.1.0” (w chmurze nie ma okna — sprawdzone w Chromium).
-- **Dalej:** BJ-01 Silnik gry (logika, bez pytań). Przed BJ-02: zasady w Twoim kasynie.
-- **Otwarte pytania:** BJ-02 kasyno/zasady · BJ-03 „dlaczego” 1 zdanie czy rozwijane · BJ-07 próg mapy błędów (50?).
+- **Bieżący:** BJ-02 Zasady stołu + strategia — ❓ czeka na decyzję (zasady Twojego kasyna).
+- **Ostatnia sesja (10.11.2026, chmura):** F-00 ✅ (wygląd zaakceptowany), BJ-01 ✅ silnik gry — 74 testy zielone; wizualizacja docs/bj01-krupier.png.
+- **Do sprawdzenia na PC:** czy `python -m app` otwiera okno WebView2 i w stopce jest „Połączono · v0.1.0”.
+- **Dalej:** BJ-02 — ustawienia zasad + tabele strategii podstawowej jako JSON, `best_action()`, testy komórka po komórce.
+- **Otwarte pytania:** BJ-02 kasyno/zasady (+ czy przy BJ krupiera tracisz tylko stawkę początkową) · BJ-03 „dlaczego” 1 zdanie czy rozwijane · BJ-07 próg mapy błędów (50?).
 - **Repo:** https://github.com/KornelDyb/bjapp (publiczne), gałąź `main`.
 - **Uruchomienie:** `python -m app` · testy: `python -m pytest` (w chmurze: `PW_CHROMIUM_PATH=/opt/pw-browsers/chromium`).
