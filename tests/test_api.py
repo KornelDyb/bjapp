@@ -72,3 +72,13 @@ def test_strategy_fast_after_cache(data_dir):
     api.set_rules({"h17": True})
     api.get_strategy()
     assert time.perf_counter() - t < 0.5
+
+
+def test_table_api_human_errors(data_dir):
+    api = make_api()
+    r = api.table_act("H")
+    assert r["ok"] is False and "rozdaj" in r["error"].lower()
+    r = api.table_new_round(0)
+    assert r["ok"] is False and "stawka" in r["error"].lower()
+    r = api.table_new_round(10)
+    assert r["ok"] and r["state"]["phase"] in ("player", "done") and r["stats"]["net"] is not None

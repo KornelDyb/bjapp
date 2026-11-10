@@ -1,7 +1,9 @@
 // Frontend tylko wyświetla i wysyła akcje do Pythona (window.pywebview.api).
+import { call } from "./api.js";
+import { tableScreen } from "./table.js";
 
 const SCREENS = {
-  table:      { title: "Stół", template: "tpl-table" },
+  table:      { title: "Stół", render: (root) => { keyHandler = tableScreen(root, describeRules, currentRules); } },
   counting:   { title: "Liczenie",   feature: "BJ-05", text: "Ćwiczenie Hi-Lo: apka pokaże karty i zapyta o running i true count." },
   stats:      { title: "Statystyki", feature: "BJ-07", text: "Zagraj pierwsze 20 rozdań, żeby zobaczyć statystyki." },
   simulation: { title: "Symulacja",  feature: "BJ-08", text: "10 000 rozdań: Twój styl vs gra idealna vs z liczeniem." },
@@ -12,16 +14,16 @@ const SCREENS = {
 const content = document.getElementById("content");
 const navItems = [...document.querySelectorAll(".nav-item")];
 
+let keyHandler = null;
+
 function show(screen) {
+  keyHandler = null;
   const def = SCREENS[screen] ?? SCREENS.table;
   navItems.forEach((b) => b.dataset.screen === screen ? b.setAttribute("aria-current", "page") : b.removeAttribute("aria-current"));
   content.replaceChildren();
   content.style.animation = "none"; void content.offsetWidth; content.style.animation = "";
   if (def.render) {
     def.render(content);
-  } else if (def.template) {
-    content.append(document.getElementById(def.template).content.cloneNode(true));
-    if (currentRules) updateTableSubtitle(currentRules);
   } else {
     content.innerHTML = `
       <header class="screen-head"><div><h1>${def.title}</h1></div></header>
@@ -36,6 +38,7 @@ function show(screen) {
 navItems.forEach((b) => b.addEventListener("click", () => show(b.dataset.screen)));
 document.addEventListener("keydown", (e) => {
   if (e.target.closest("input, textarea, select")) return;
+  if (keyHandler && keyHandler(e)) { e.preventDefault(); return; }
   if (e.key.toLowerCase() === "c" && !e.ctrlKey && !e.metaKey) show("cheatsheet");
 });
 
@@ -43,14 +46,6 @@ function setStatus(state, text) {
   const dot = document.getElementById("status-dot");
   dot.className = `status-dot ${state}`;
   document.getElementById("status-text").textContent = text;
-}
-
-export function toastError(msg) {
-  const t = document.createElement("div");
-  t.className = "toast glass";
-  t.textContent = msg;
-  document.body.append(t);
-  setTimeout(() => t.remove(), 5000);
 }
 
 // ---------- Ustawienia: zasady stołu ----------
@@ -130,15 +125,6 @@ function updateTableSubtitle(rules) {
   currentRules = rules;
   const el = document.querySelector("#table-rules");
   if (el) el.textContent = describeRules(rules);
-}
-
-// Wywołanie API z obsługą błędów po ludzku.
-export async function call(method, ...args) {
-  const api = window.pywebview?.api;
-  if (!api) throw new Error("Brak połączenia z Pythonem.");
-  const r = await api[method](...args);
-  if (!r.ok) { toastError(r.error); throw new Error(r.error); }
-  return r;
 }
 
 async function connect() {

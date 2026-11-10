@@ -38,7 +38,7 @@ Otwarte pytania: brak (zasady konkretnego kasyna → BJ-02; reguła OBO do potwi
 Testy: tests/engine/ · Wizualizacja: docs/bj01-krupier.png
 
 ## BJ-02 Zasady stołu + strategia
-Status: 👀 czeka na akceptację (ekran Ustawienia; logika ✅)
+Status: ✅ gotowe (Kornel przeszedł do BJ-03 10.11)
 Typ: logika + UI (ekran Ustawienia)
 Zależy od: BJ-01
 Kryteria akceptacji:
@@ -55,8 +55,21 @@ Otwarte pytania: brak (zasady potwierdzone 10.11)
 Testy: tests/strategy/, tests/test_api.py, tests/test_ui_e2e.py · Wizualizacje: docs/bj02-strategia.png, docs/bj02-ustawienia.png
 
 ## BJ-03 Stół z korektą na żywo
-Status: ⬜ todo · Typ: UI · Zależy od: BJ-02
-Otwarte pytania: „dlaczego” jednym zdaniem czy rozwijane?
+Status: 👀 czeka na akceptację
+Typ: UI + logika
+Zależy od: BJ-02
+Kryteria akceptacji:
+- [x] Stawka: wybór żetonem (1, 5, 10, 25, 50, 100 jednostek), domyślnie 10; „Rozdaj” (Spacja) startuje rozdanie
+- [x] Karty animowane: rozdanie ~250 ms na kartę, flip zakrytej karty krupiera (tryb peek), ręce po splicie obok siebie, aktywna podświetlona
+- [x] Po każdej decyzji: ✅/❌ + błysk zielony/czerwony + jedno zdanie „dlaczego” (konkretnie dla sytuacji: suma, karta krupiera, powód); decyzja jest wykonywana zawsze
+- [x] Rozwinięcie „Szczegóły”: EV każdego legalnego ruchu (np. „Dobierz −0,54”) i koszt błędu w % stawki
+- [x] Skróty: H S D P R (tylko legalne), Spacja = następne rozdanie; przyciski nielegalnych ruchów wyłączone
+- [x] Wynik rozdania: baner (wygrana/przegrana/push/blackjack/poddanie) z kwotą; nagłówek: trafność sesji, liczba rozdań, wynik sesji
+- [x] Zapis do bazy: sesja (przy pierwszym rozdaniu), rozdanie (karty, stawka, wynik, wypłata), każda decyzja (suma, miękka, para, karta krupiera, ruch, ruch poprawny, czy trafny)
+- [x] Zmiana zasad w Ustawieniach działa od następnego rozdania (nowy but)
+- [x] Feedback po decyzji < 100 ms (po stronie Pythona)
+Otwarte pytania: brak („dlaczego” = zdanie + rozwijane EV, decyzja 10.11)
+Testy: tests/test_table.py, tests/strategy/test_explain.py, tests/test_ui_e2e.py · Screenshoty: docs/bj03-*.png
 
 ## BJ-04 Ściąga strategii
 Status: ⬜ todo · Typ: UI · Zależy od: BJ-02

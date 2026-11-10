@@ -1,5 +1,7 @@
 """SQLite: schemat z PLAN.md i proste ustawienia klucz–wartość."""
+import json
 import sqlite3
+from datetime import datetime
 import threading
 from pathlib import Path
 
@@ -82,6 +84,37 @@ class Database:
                 "ON CONFLICT(key) DO UPDATE SET value = excluded.value",
                 (key, value),
             )
+
+    # ----- sesje, rozdania, decyzje -----
+    def _exec(self, sql, params=()) -> int:
+        with self._lock, self._conn:
+            return self._conn.execute(sql, params).lastrowid
+
+    def start_session(self, rules: dict, mode: str) -> int:
+        return self._exec("INSERT INTO sessions(started_at, rules_json, mode) VALUES(?, ?, ?)",
+                          (datetime.now().isoformat(timespec="seconds"), json.dumps(rules), mode))
+
+    def end_session(self, session_id: int) -> None:
+        self._exec("UPDATE sessions SET ended_at = ? WHERE id = ?",
+                   (datetime.now().isoformat(timespec="seconds"), session_id))
+
+    def add_hand(self, session_id: int, bet: float, true_count: float | None = None) -> int:
+        return self._exec("INSERT INTO hands(session_id, player_cards, dealer_cards, bet, true_count_at_start) "
+                          "VALUES(?, '[]', '[]', ?, ?)", (session_id, bet, true_count))
+
+    def finish_hand(self, hand_id: int, session_id: int, player_cards, dealer_cards, result: str, payout: float) -> None:
+        self._exec("UPDATE hands SET player_cards = ?, dealer_cards = ?, result = ?, payout = ? WHERE id = ?",
+                   (json.dumps(player_cards), json.dumps(dealer_cards), result, payout, hand_id))
+        self._exec("UPDATE sessions SET hands_count = hands_count + 1, ended_at = ? WHERE id = ?",
+                   (datetime.now().isoformat(timespec="seconds"), session_id))
+
+    def add_decision(self, session_id: int, hand_id: int, total: int, soft: bool, pair: bool, upcard: int,
+                     taken: str, correct_action: str, is_correct: bool) -> None:
+        self._exec("INSERT INTO decisions(hand_id, player_total, soft, pair, dealer_upcard, action_taken, "
+                   "action_correct, is_correct) VALUES(?, ?, ?, ?, ?, ?, ?, ?)",
+                   (hand_id, total, int(soft), int(pair), upcard, taken, correct_action, int(is_correct)))
+        if is_correct:
+            self._exec("UPDATE sessions SET correct_count = correct_count + 1 WHERE id = ?", (session_id,))
 
     def close(self) -> None:
         self._conn.close()

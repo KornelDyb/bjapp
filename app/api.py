@@ -5,9 +5,11 @@ import logging
 
 from . import __version__
 from .paths import log_path
+from .engine.errors import IllegalMove
 from .engine.rules import Rules
 from .storage.db import Database
 from .strategy.solver import chart
+from .table import TableSession
 
 log = logging.getLogger("trener_bj")
 
@@ -33,7 +35,7 @@ def endpoint(fn):
         try:
             result = fn(self, *args, **kwargs)
             return {"ok": True, **(result or {})}
-        except UserError as e:
+        except (UserError, IllegalMove) as e:
             log.warning("%s: %s", fn.__name__, e)
             return {"ok": False, "error": str(e)}
         except Exception:
@@ -45,6 +47,7 @@ def endpoint(fn):
 class Api:
     def __init__(self, db: Database):
         self._db = db
+        self._table = TableSession(db, rules_provider=self._rules)
         setup_logging()
 
     @endpoint
@@ -112,6 +115,15 @@ class Api:
     @endpoint
     def get_strategy(self):
         return {"chart": chart(self._rules())}
+
+    # ----- stół -----
+    @endpoint
+    def table_new_round(self, bet):
+        return self._table.new_round(bet)
+
+    @endpoint
+    def table_act(self, action):
+        return self._table.act(action)
 
     @staticmethod
     def _check_key(key):

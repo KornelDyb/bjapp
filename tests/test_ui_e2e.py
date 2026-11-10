@@ -10,7 +10,8 @@ from tools.dev_server import serve  # noqa: E402
 
 
 @pytest.fixture
-def page(data_dir):
+def page(data_dir, monkeypatch):
+    monkeypatch.setenv("TRENER_BJ_SEED", "7")
     server = serve(0)
     threading.Thread(target=server.serve_forever, daemon=True).start()
     with pw.sync_playwright() as p:
@@ -62,3 +63,44 @@ def test_obo_option_only_without_hole_card(page):
     page.wait_for_selector('[data-key="enhc_obo"]')
     page.click('button[data-key="hole_card"][data-val="\\"peek\\""]')
     page.wait_for_selector('[data-key="enhc_obo"]', state="detached")
+
+
+def play_until_feedback(page, key="s", max_rounds=8):
+    for _ in range(max_rounds):
+        page.keyboard.press(" ")
+        page.wait_for_selector("#controls [data-act], .banner")
+        if page.locator("#controls [data-act]").count():
+            page.keyboard.press(key)
+            page.wait_for_selector("#feedback:not([hidden])")
+            return True
+        page.wait_for_selector("#deal")
+    return False
+
+
+def test_table_round_with_live_feedback(page):
+    page.wait_for_selector("text=Połączono · v0.1.0")
+    page.click('[data-bet="25"]')
+    assert play_until_feedback(page)
+    fb = page.inner_text("#feedback")
+    assert ("Dobrze" in fb) or ("Błąd" in fb and "kosztuje" in fb)
+    assert " vs " in fb
+    page.click("#fb-toggle")
+    evs = page.inner_text(".evs")
+    assert "(Twój ruch)" in evs and "Stój" in evs
+    # dokończ rozdanie stojąc
+    while page.locator("#controls [data-act]").count():
+        page.keyboard.press("s")
+        page.wait_for_timeout(50)
+    page.wait_for_selector(".banner")
+    assert int(page.inner_text("#st-hands")) >= 1
+    assert page.inner_text("#st-acc").endswith("%")
+
+
+def test_illegal_key_does_nothing(page):
+    page.wait_for_selector("text=Połączono · v0.1.0")
+    page.keyboard.press(" ")
+    page.wait_for_selector("#controls [data-act], .banner")
+    if page.locator('#controls [data-act="R"][disabled]').count():
+        page.keyboard.press("r")  # poddanie wyłączone w zasadach
+        page.wait_for_timeout(150)
+        assert page.locator("#feedback").is_hidden()

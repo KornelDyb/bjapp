@@ -10,3 +10,5 @@
 - Zmiana (Kornel): przy BJ krupiera w ENHC tracisz wszystko — domyślnie enhc_obo=False. BJ-01 ♻️→✅ (zmiana domyślnej, testy zaktualizowane pod nowe wymaganie).
 - BJ-02 Zasady stołu + strategia → 👀: dokładny solver 6 talii (`strategy/finite.py`), 6 tabel EV (peek/ENHC/ENHC+OBO × S17/H17; DAS i poddanie bez osobnych tabel), `best_action()`, API get/set_rules + get_strategy, ekran Ustawienia (autozapis). Tabela US zgodna komórka po komórce; EU różni się w 4 komórkach (11 vs 10, 8,8 vs 10/A, A,A vs A → dobierz). Testy: 99 passed.
 - Odkrycie przy BJ-02: model nieskończonej talii dawał „dobierz” dla A,2 vs 5 (6 talii: „podwój”, różnica 0,003 stawki) → przejście na dokładny solver z tabelami liczonymi raz (6,5 min).
+- Decyzje 10.11: BJ-02 ✅; „dlaczego” = zdanie + rozwijane EV; poddanie bez zmian (Tak/Nie).
+- BJ-03 Stół z korektą na żywo → 👀: żetony stawki, animowane rozdanie/flip, ✅/❌ + błysk + zdanie „dlaczego” + rozwijane EV (3 miejsca przy bliskich wartościach) i koszt błędu, skróty H/S/D/P/R/Spacja, baner wyniku, statystyki sesji, zapis sesji/rozdań/decyzji do SQLite. Frontend podzielony na api.js / table.js / app.js. Testy: 121 passed.

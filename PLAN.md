@@ -108,7 +108,7 @@ Cała logika w Pythonie i testowana; frontend tylko wyświetla i wysyła akcje p
 
 **Otwarte pytania:**
 - [x] BJ-02: zasady europejskie z PRD; przy BJ krupiera tracisz wszystko (decyzja 10.11)
-- [ ] BJ-03: wyjaśnienie „dlaczego” jednym zdaniem czy rozwijane?
+- [x] BJ-03: „dlaczego” = jedno zdanie + rozwijane EV wszystkich ruchów (decyzja 10.11)
 - [ ] BJ-07: od ilu rozdań pokazywać mapę błędów (propozycja: 50)?
 
 ## Decision log
@@ -125,3 +125,5 @@ Cała logika w Pythonie i testowana; frontend tylko wyświetla i wysyła akcje p
 | 10.11.2026 | Repo: `KornelDyb/bjapp` zamiast `trener-blackjack` | Wybór użytkownika (repo już założone) |
 | 10.11.2026 | Domyślne zasady europejskie; przy BJ krupiera (ENHC) tracisz wszystkie stawki, także dopłaty | Wybór użytkownika; ostrożniejsza strategia (np. 11 vs 10 bez podwojenia) |
 | 10.11.2026 | **Zmiana:** tabele strategii (JSON) wyliczone dokładnym solverem dla 6 talii (`tools/build_strategy.py`), nie przepisane; walidacja: kanoniczna tabela US komórka po komórce + symulacja na silniku | wizardofodds.com zablokowany w sieci sesji; model nieskończonej talii odbiegał od tabel 6-taliowych (A,2 vs 5), dokładny solver się zgadza; EV w każdej komórce posłuży do „dlaczego”. Decyzja Claude'a — do potwierdzenia |
+| 10.11.2026 | „Dlaczego” po decyzji: zdanie + rozwijane EV ruchów i koszt błędu | Wybór użytkownika; liczby z tabel solvera |
+| 10.11.2026 | Poddanie zostaje jako Tak/Nie (bez osobnego early surrender) | Wybór użytkownika; w ENHC poddanie działa jak early (pół stawki niezależnie od BJ krupiera) |
