@@ -116,5 +116,10 @@ class Database:
         if is_correct:
             self._exec("UPDATE sessions SET correct_count = correct_count + 1 WHERE id = ?", (session_id,))
 
+    def add_count_check(self, session_id: int, true_rc: int, answer_rc: int, true_tc: float,
+                        answer_tc: float, is_correct: bool) -> None:
+        self._exec("INSERT INTO count_checks(session_id, true_rc, answer_rc, true_tc, answer_tc, is_correct) "
+                   "VALUES(?, ?, ?, ?, ?, ?)", (session_id, true_rc, answer_rc, true_tc, answer_tc, int(is_correct)))
+
     def close(self) -> None:
         self._conn.close()

@@ -103,7 +103,7 @@ Cała logika w Pythonie i testowana; frontend tylko wyświetla i wysyła akcje p
 **Założenia do sprawdzenia:**
 - ~~Domyślne zasady~~ → potwierdzone 10.11: 6 talii, S17, DAS, bez poddania, ENHC, 3:2, penetracja 75%; przy BJ krupiera tracisz wszystkie stawki (bez OBO). Do sprawdzenia przy stole w kasynie.
 - Bet ramp: TC ≤ +1 → 1 j., +2 → 2, +3 → 4, ≥ +4 → 8 → BJ-06.
-- Pytanie kontrolne o count co 5–15 kart i przed każdą stawką → BJ-05.
+- ~~Pytanie kontrolne o count co 5–15 kart i przed każdą stawką~~ → zmienione 10.11: licznik ukryty, pytanie przed stawką co N rozdań (domyślnie 3), przełącznik „pokaż licznik” → BJ-05.
 - „Twój styl” w symulacji = trafność z ostatnich 500 decyzji i mapa błędów → BJ-08.
 
 **Otwarte pytania:**
@@ -127,3 +127,5 @@ Cała logika w Pythonie i testowana; frontend tylko wyświetla i wysyła akcje p
 | 10.11.2026 | **Zmiana:** tabele strategii (JSON) wyliczone dokładnym solverem dla 6 talii (`tools/build_strategy.py`), nie przepisane; walidacja: kanoniczna tabela US komórka po komórce + symulacja na silniku | wizardofodds.com zablokowany w sieci sesji; model nieskończonej talii odbiegał od tabel 6-taliowych (A,2 vs 5), dokładny solver się zgadza; EV w każdej komórce posłuży do „dlaczego”. Decyzja Claude'a — do potwierdzenia |
 | 10.11.2026 | „Dlaczego” po decyzji: zdanie + rozwijane EV ruchów i koszt błędu | Wybór użytkownika; liczby z tabel solvera |
 | 10.11.2026 | Poddanie zostaje jako Tak/Nie (bez osobnego early surrender) | Wybór użytkownika; w ENHC poddanie działa jak early (pół stawki niezależnie od BJ krupiera) |
+| 10.11.2026 | Liczenie Hi-Lo wbudowane w stół (ukryty licznik + pytania przed stawką, przełącznik „pokaż”); BJ-05 przed BJ-04 | Wybór użytkownika: przy stole ćwiczymy strategię i liczenie naraz |
+| 10.11.2026 | Wszystkie akcje stale widoczne na pasku (nieaktywne wyszarzone), każdy skrót ma przycisk | Prośba użytkownika |

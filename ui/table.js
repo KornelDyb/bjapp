@@ -10,14 +10,21 @@ const DEAL_MS = 250, STAGGER = 140;
 const fmtUnits = (v) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${Math.abs(v).toLocaleString("pl-PL", { maximumFractionDigits: 1 })}`;
 const rankLabel = (r) => (r === "T" ? "10" : r);
 
-const S = { bet: 10, state: null, stats: null, feedback: null, details: false, busy: false, prev: { dealer: 0, hands: [], hidden: false } };
+const S = { bet: 10, state: null, stats: null, feedback: null, details: false, busy: false,
+  prev: { dealer: 0, hands: [], hidden: false }, count: null, quizDue: false, quiz: null, showCount: false, shuffled: false, nav: null };
 
-export function tableScreen(root, describeRules, rules) {
+const fmt1 = (v) => (v ?? 0).toLocaleString("pl-PL", { minimumFractionDigits: 1, maximumFractionDigits: 1 }).replace("-", "−");
+const pct = (v) => (v === null || v === undefined ? "—" : `${Math.round(v * 100)}%`);
+
+export function tableScreen(root, describeRules, rules, nav) {
+  S.nav = nav;
   root.innerHTML = `
     <header class="screen-head">
       <div><h1>Stół</h1><p class="muted" id="table-rules">${rules ? describeRules(rules) : ""}</p></div>
       <div class="chips">
-        <div class="chip glass"><span class="muted">Trafność</span><strong class="num" id="st-acc">—</strong></div>
+        <div class="chip glass count-live" id="count-live" hidden><span class="muted">Running · True</span><strong class="num" id="st-count">0 · 0,0</strong></div>
+        <div class="chip glass"><span class="muted">Strategia</span><strong class="num" id="st-acc">—</strong></div>
+        <div class="chip glass"><span class="muted">Liczenie</span><strong class="num" id="st-cacc">—</strong></div>
         <div class="chip glass"><span class="muted">Rozdania</span><strong class="num" id="st-hands">0</strong></div>
         <div class="chip glass"><span class="muted">Wynik</span><strong class="num" id="st-net">0</strong></div>
       </div>
@@ -28,14 +35,79 @@ export function tableScreen(root, describeRules, rules) {
       <div class="zone"><div class="hands" id="hands"></div><span class="label muted">Ty</span></div>
     </section>
     <section class="feedback glass" id="feedback" hidden></section>
-    <footer class="actions" id="controls"></footer>`;
+    <footer class="controls" id="controls"></footer>
+    <div class="modal-wrap" id="quiz" hidden></div>`;
   S.prev = { dealer: 0, hands: [], hidden: false };
+  call("get_setting", "count.show").then((r) => { S.showCount = !!r.value; drawCount(); drawControls(); }).catch(() => {});
+  // odtwórz stan z Pythona (np. po przeładowaniu strony w trakcie rozdania)
+  call("table_status").then((r) => { apply(r); S.prev = { dealer: 0, hands: [], hidden: false }; draw(false); }).catch(() => {});
   draw(false);
   return onKey;
 }
 
+function drawCount() {
+  const live = document.getElementById("count-live");
+  if (!live) return;
+  live.hidden = !S.showCount;
+  if (S.count) document.getElementById("st-count").textContent = `${S.count.running > 0 ? "+" : S.count.running < 0 ? "−" : ""}${Math.abs(S.count.running)} · ${fmt1(S.count.true)}`;
+}
+
+async function toggleCount() {
+  S.showCount = !S.showCount;
+  try { await call("set_setting", "count.show", S.showCount); } catch { }
+  drawCount(); drawControls();
+}
+
+function apply(r) {
+  if (r.state !== undefined && r.state !== null) S.state = r.state;
+  if (r.stats) S.stats = r.stats;
+  if (r.count) S.count = r.count;
+  if ("quiz_due" in r) S.quizDue = r.quiz_due;
+}
+
+// ----- pytanie o count -----
+function openQuiz() {
+  const w = document.getElementById("quiz");
+  S.quiz = { result: null };
+  w.hidden = false;
+  w.innerHTML = `<form class="modal glass" id="quiz-form" autocomplete="off">
+      <h2>Ile wynosi count?</h2>
+      <p class="muted">Policz karty, które wyszły od tasowania (Hi-Lo: 2–6 = +1, 7–9 = 0, 10–A = −1).</p>
+      <div class="quiz-fields">
+        <label>Running count<input id="q-rc" inputmode="decimal" required></label>
+        <label>True count<input id="q-tc" inputmode="decimal" required placeholder="np. 1,5"></label>
+      </div>
+      <div class="quiz-msg" id="q-msg"></div>
+      <div class="quiz-actions"><button class="btn primary" id="q-submit" type="submit"><kbd>Enter</kbd> Sprawdź</button></div>
+    </form>`;
+  const form = w.querySelector("#quiz-form");
+  w.querySelector("#q-rc").focus();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (S.quiz.result) { closeQuiz(); deal(); return; }
+    try {
+      const r = await call("table_count_answer", w.querySelector("#q-rc").value, w.querySelector("#q-tc").value);
+      S.quiz.result = r; S.quizDue = false; S.stats = r.stats;
+      const msg = w.querySelector("#q-msg");
+      msg.className = `quiz-msg ${r.correct ? "ok" : "bad"}`;
+      msg.innerHTML = `<span class="fb-icon">${r.correct ? "✓" : "✕"}</span><p>${r.sentence}</p>`;
+      w.querySelectorAll("input").forEach((i) => { i.disabled = true; });
+      w.querySelector("#q-submit").innerHTML = `<kbd>Enter</kbd> Rozdaj`;
+      w.querySelector("#q-submit").focus();
+      draw(false);
+    } catch { }
+  });
+}
+
+function closeQuiz() {
+  const w = document.getElementById("quiz");
+  if (w) { w.hidden = true; w.innerHTML = ""; }
+  S.quiz = null;
+}
+
 function onKey(e) {
   if (e.ctrlKey || e.metaKey || e.altKey) return false;
+  if (S.quiz) return false;  // okno pytania obsługuje Enter samo
   const k = e.key.toUpperCase();
   if (e.key === " ") {
     if (S.state?.phase !== "player") { deal(); return true; }
@@ -46,11 +118,12 @@ function onKey(e) {
 }
 
 async function deal() {
-  if (S.busy) return;
+  if (S.busy || S.state?.phase === "player") return;
+  if (S.quizDue) { openQuiz(); return; }
   S.busy = true;
   try {
     const r = await call("table_new_round", S.bet);
-    S.state = r.state; S.stats = r.stats; S.feedback = null;
+    apply(r); S.feedback = null; S.shuffled = r.state.shuffled;
     S.prev = { dealer: 0, hands: [], hidden: false };
     draw(true);
   } catch { /* toast już pokazany */ } finally { S.busy = false; }
@@ -61,7 +134,7 @@ async function act(a) {
   S.busy = true;
   try {
     const r = await call("table_act", a);
-    S.state = r.state; S.stats = r.stats; S.feedback = r.feedback;
+    apply(r); S.feedback = r.feedback; S.shuffled = false;
     flash(r.feedback.correct);
     draw(true);
   } catch { } finally { S.busy = false; }
@@ -91,8 +164,10 @@ function draw(animate) {
   const st = S.state;
   // statystyki
   const s = S.stats;
+  drawCount();
   if (s) {
-    document.getElementById("st-acc").textContent = s.accuracy === null ? "—" : `${Math.round(s.accuracy * 100)}%`;
+    document.getElementById("st-acc").textContent = pct(s.accuracy);
+    document.getElementById("st-cacc").textContent = pct(s.count_accuracy);
     document.getElementById("st-hands").textContent = s.hands;
     const net = document.getElementById("st-net");
     net.textContent = fmtUnits(s.net);
@@ -164,6 +239,12 @@ function drawCenter(after) {
     c.innerHTML = `<p class="lead">Postaw i rozdaj</p><p class="muted">Wybierz stawkę i naciśnij <kbd>Spacja</kbd>.</p>`;
     return;
   }
+  if (S.shuffled) {
+    const n = document.createElement("p");
+    n.className = "shuffle-note";
+    n.textContent = "Przetasowano — liczysz od zera";
+    c.append(n);
+  }
   if (st.phase !== "done") return;
   const net = st.net;
   const kinds = st.hands.map((h) => h.result);
@@ -171,7 +252,7 @@ function drawCenter(after) {
   const b = document.createElement("div");
   b.className = `banner ${net > 0 ? "pos" : net < 0 ? "neg" : ""}`;
   b.style.animationDelay = `${after}ms`;
-  b.innerHTML = `<strong>${title}</strong><span class="num">${fmtUnits(net)}</span><span class="muted">Spacja — następne rozdanie</span>`;
+  b.innerHTML = `<strong>${title}</strong><span class="num">${fmtUnits(net)}</span><span class="muted">${S.quizDue ? "Spacja — pytanie o count" : "Spacja — następne rozdanie"}</span>`;
   c.append(b);
 }
 
@@ -195,21 +276,29 @@ function drawFeedback() {
 }
 
 function drawControls() {
+  // Wszystkie akcje zawsze na ekranie; niedostępne są wyłączone.
   const box = document.getElementById("controls");
   const st = S.state;
-  if (st?.phase === "player") {
-    box.innerHTML = ACTIONS.map(([k, n]) =>
-      `<button class="btn" data-act="${k}" ${st.legal.includes(k) ? "" : "disabled"}><kbd>${k}</kbd> ${n}</button>`).join("");
-    box.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => act(b.dataset.act)));
-  } else {
-    box.innerHTML = `<div class="bet">
-        <span class="muted">Stawka</span>
-        ${CHIPS.map((c) => `<button class="chip-btn${c === S.bet ? " on" : ""}" data-bet="${c}" aria-pressed="${c === S.bet}">${c}</button>`).join("")}
+  const playing = st?.phase === "player";
+  const legal = playing ? st.legal : [];
+  box.innerHTML = `
+    <div class="actions">
+      ${ACTIONS.map(([k, n]) => `<button class="btn" data-act="${k}" ${legal.includes(k) ? "" : "disabled"}><kbd>${k}</kbd> ${n}</button>`).join("")}
+      <span class="sep" aria-hidden="true"></span>
+      <button class="btn" id="go-cheat"><kbd>C</kbd> Ściąga</button>
+      <button class="btn${S.showCount ? " on" : ""}" id="toggle-count" aria-pressed="${S.showCount}">Licznik: ${S.showCount ? "widoczny" : "ukryty"}</button>
+    </div>
+    <div class="actions">
+      <div class="bet"><span class="muted">Stawka</span>
+        ${CHIPS.map((c) => `<button class="chip-btn${c === S.bet ? " on" : ""}" data-bet="${c}" aria-pressed="${c === S.bet}" ${playing ? "disabled" : ""}>${c}</button>`).join("")}
       </div>
-      <button class="btn primary" id="deal"><kbd>Spacja</kbd> Rozdaj</button>`;
-    box.querySelectorAll("[data-bet]").forEach((b) => b.addEventListener("click", () => { S.bet = Number(b.dataset.bet); drawControls(); }));
-    box.querySelector("#deal").addEventListener("click", deal);
-  }
+      <button class="btn primary" id="deal" ${playing ? "disabled" : ""}><kbd>Spacja</kbd> ${S.quizDue ? "Pytanie o count" : "Rozdaj"}</button>
+    </div>`;
+  box.querySelectorAll("[data-act]").forEach((b) => b.addEventListener("click", () => act(b.dataset.act)));
+  box.querySelectorAll("[data-bet]").forEach((b) => b.addEventListener("click", () => { S.bet = Number(b.dataset.bet); drawControls(); }));
+  box.querySelector("#deal").addEventListener("click", deal);
+  box.querySelector("#go-cheat").addEventListener("click", () => S.nav?.("cheatsheet"));
+  box.querySelector("#toggle-count").addEventListener("click", toggleCount);
 }
 
 // dla testów i podglądu

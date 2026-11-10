@@ -55,7 +55,7 @@ Otwarte pytania: brak (zasady potwierdzone 10.11)
 Testy: tests/strategy/, tests/test_api.py, tests/test_ui_e2e.py · Wizualizacje: docs/bj02-strategia.png, docs/bj02-ustawienia.png
 
 ## BJ-03 Stół z korektą na żywo
-Status: 👀 czeka na akceptację
+Status: ✅ gotowe (mechanika ENHC potwierdzona przez Kornela 10.11)
 Typ: UI + logika
 Zależy od: BJ-02
 Kryteria akceptacji:
@@ -74,9 +74,24 @@ Testy: tests/test_table.py, tests/strategy/test_explain.py, tests/test_ui_e2e.py
 ## BJ-04 Ściąga strategii
 Status: ⬜ todo · Typ: UI · Zależy od: BJ-02
 
-## BJ-05 Liczenie Hi-Lo
-Status: ⬜ todo · Typ: logika + UI · Zależy od: BJ-01
-Założenie do weryfikacji: pytanie kontrolne co 5–15 kart i przed każdą stawką.
+## BJ-05 Liczenie Hi-Lo (przy stole)
+Status: 👀 czeka na akceptację (przesunięte przed BJ-04 — decyzja 10.11)
+Typ: logika + UI
+Zależy od: BJ-03
+Kryteria akceptacji:
+- [x] Hi-Lo: 2–6 = +1, 7–9 = 0, 10/figury/as = −1; running count liczony ze wszystkich kart, które wyszły z buta od tasowania; tasowanie zeruje
+- [x] True count = running / talie pozostałe w bucie (karty pozostałe / 52); odpowiedź TC uznana, gdy różni się od dokładnej o ≤ 0,5; RC musi być dokładny
+- [x] Pytanie kontrolne przed stawką co N rozdań (Ustawienia: co rozdanie / co 3 (domyślnie) / co 5 / wyłączone); nie pyta, gdy od tasowania wyszło < 5 kart
+- [x] Okno pytania: pola running i true count (przecinek lub kropka), Enter zatwierdza; wynik ✅/❌ z poprawnymi wartościami i jednym zdaniem, potem rozdanie rusza
+- [x] Zapis: count_checks (prawdziwe i podane RC/TC, trafność); hands.true_count_at_start
+- [x] Licznik domyślnie ukryty; przełącznik „Pokaż licznik” w Ustawieniach pokazuje running/true count na stole na żywo
+- [x] Po tasowaniu informacja „Przetasowano — liczysz od zera”
+- [x] Nagłówek stołu: trafność liczenia w sesji
+- [x] Ekran Liczenie: zasady Hi-Lo, kiedy liczenie ma sens (tasownica ciągła = bez sensu), trafność liczenia
+- [x] (dodane 10.11) Wszystkie akcje zawsze na ekranie: H/S/D/P/R, Rozdaj, Ściąga, przełącznik licznika — niedostępne wyłączone
+- [x] (poprawka) Po przeładowaniu strony w trakcie rozdania stół odtwarza bieżący stan z Pythona
+Otwarte pytania: brak
+Testy: tests/counting/, tests/test_table.py, tests/test_ui_e2e.py · Screenshoty: docs/bj05-*.png
 
 ## BJ-06 Podpowiedź stawki
 Status: ⬜ todo · Typ: logika + UI · Zależy od: BJ-05

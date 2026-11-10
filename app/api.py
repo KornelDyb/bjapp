@@ -125,6 +125,14 @@ class Api:
     def table_act(self, action):
         return self._table.act(action)
 
+    @endpoint
+    def table_count_answer(self, rc, tc):
+        return self._table.answer_count(rc, tc)
+
+    @endpoint
+    def table_status(self):
+        return self._table.status()
+
     @staticmethod
     def _check_key(key):
         if not isinstance(key, str) or not key.strip():

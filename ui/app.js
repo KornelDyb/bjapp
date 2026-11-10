@@ -3,8 +3,8 @@ import { call } from "./api.js";
 import { tableScreen } from "./table.js";
 
 const SCREENS = {
-  table:      { title: "Stół", render: (root) => { keyHandler = tableScreen(root, describeRules, currentRules); } },
-  counting:   { title: "Liczenie",   feature: "BJ-05", text: "Ćwiczenie Hi-Lo: apka pokaże karty i zapyta o running i true count." },
+  table:      { title: "Stół", render: (root) => { keyHandler = tableScreen(root, describeRules, currentRules, show); } },
+  counting:   { title: "Liczenie", render: renderCounting },
   stats:      { title: "Statystyki", feature: "BJ-07", text: "Zagraj pierwsze 20 rozdań, żeby zobaczyć statystyki." },
   simulation: { title: "Symulacja",  feature: "BJ-08", text: "10 000 rozdań: Twój styl vs gra idealna vs z liczeniem." },
   cheatsheet: { title: "Ściąga",     feature: "BJ-04", text: "Tabela strategii podstawowej z podświetloną bieżącą sytuacją." },
@@ -111,6 +111,7 @@ async function renderSettings(root) {
     const b = e.target.closest("[data-key]");
     if (b) save({ [b.dataset.key]: JSON.parse(b.dataset.val) });
   });
+  root.append(await countSettings());
   form.addEventListener("input", (e) => {
     if (e.target.id === "pen") form.querySelector("#pen-val").textContent = `${e.target.value}%`;
   });
@@ -118,6 +119,65 @@ async function renderSettings(root) {
     if (e.target.id === "pen") save({ penetration: Number(e.target.value) / 100 });
   });
   draw();
+}
+
+// ---------- Liczenie: zasady Hi-Lo ----------
+async function renderCounting(root) {
+  let st = null;
+  try { st = (await call("table_status")).stats; } catch { }
+  const pct = (v) => (v === null || v === undefined ? "—" : `${Math.round(v * 100)}%`);
+  root.innerHTML = `<header class="screen-head"><div><h1>Liczenie</h1>
+    <p class="muted">Hi-Lo: licznik jest ukryty, a przy stole co kilka rozdań padnie pytanie o count.</p></div>
+    <div class="chips"><div class="chip glass"><span class="muted">Trafność liczenia</span><strong class="num">${pct(st?.count_accuracy)}</strong></div>
+    <div class="chip glass"><span class="muted">Pytań w sesji</span><strong class="num">${st?.count_checks ?? 0}</strong></div></div></header>
+    <section class="info-grid">
+      <div class="glass info"><h2>Wartości kart</h2>
+        <div class="hilo"><div><b class="pos">+1</b><span>2 3 4 5 6</span></div><div><b>0</b><span>7 8 9</span></div><div><b class="neg">−1</b><span>10 J Q K A</span></div></div>
+        <p class="muted">Running count = suma wartości wszystkich kart, które wyszły od tasowania. Po tasowaniu liczysz od zera.</p></div>
+      <div class="glass info"><h2>True count</h2>
+        <p class="formula num">true = running ÷ talie w bucie</p>
+        <p class="muted">Przykład: running +6, w bucie zostały 3 talie → true +2. Odpowiedź uznaję, gdy różni się o najwyżej 0,5.</p></div>
+      <div class="glass info"><h2>Kiedy liczenie ma sens</h2>
+        <ul><li>Ręczne tasowanie lub but z kartą odcięcia — <b class="pos">tak</b>.</li>
+        <li>Tasownica ciągła (karty wracają po każdym rozdaniu) — <b class="neg">nie</b>, count zawsze ≈ 0.</li>
+        <li>Wysoki true count = więcej dziesiątek i asów w bucie = przewaga po Twojej stronie.</li>
+        <li>Kasyno może poprosić o opuszczenie stołu, jeśli widać, że liczysz — graj spokojnie.</li></ul></div>
+      <div class="glass info"><h2>Ustawienia</h2>
+        <p class="muted">Jak często pytać i czy pokazywać licznik zmienisz w Ustawieniach albo przyciskiem „Licznik” na stole.</p>
+        <button class="btn" id="to-settings">Przejdź do Ustawień</button></div>
+    </section>`;
+  root.querySelector("#to-settings").addEventListener("click", () => show("settings"));
+}
+
+const COUNT_FIELDS = [
+  { key: "count.every", label: "Pytanie o count", def: 3, options: [[1, "Co rozdanie"], [3, "Co 3"], [5, "Co 5"], [0, "Wyłączone"]],
+    hint: "Przed stawką, po ilu rozdaniach pytać o running i true count." },
+  { key: "count.show", label: "Licznik na stole", def: false, options: [[false, "Ukryty"], [true, "Widoczny"]],
+    hint: "Widoczny licznik pomaga na start, ale nie ćwiczy liczenia w głowie." },
+];
+
+async function countSettings() {
+  const sec = document.createElement("section");
+  sec.className = "glass settings";
+  const vals = {};
+  for (const f of COUNT_FIELDS) {
+    try { const v = (await call("get_setting", f.key)).value; vals[f.key] = v ?? f.def; } catch { vals[f.key] = f.def; }
+  }
+  const draw = (saved) => {
+    sec.innerHTML = `<h2 class="sec-title">Liczenie kart</h2>` + COUNT_FIELDS.map((f) => `
+      <div class="field"><div class="field-label">${f.label}<span class="muted">${f.hint}</span></div>
+        <div class="seg" role="radiogroup" aria-label="${f.label}">${f.options.map(([v, l]) =>
+          `<button role="radio" aria-checked="${vals[f.key] === v}" data-ckey="${f.key}" data-val='${JSON.stringify(v)}'>${l}</button>`).join("")}</div></div>`).join("") +
+      `<div class="settings-foot"><span></span><span class="saved" ${saved ? "" : "hidden"}>✓ Zapisano</span></div>`;
+  };
+  sec.addEventListener("click", async (e) => {
+    const b = e.target.closest("[data-ckey]");
+    if (!b) return;
+    const v = JSON.parse(b.dataset.val);
+    try { await call("set_setting", b.dataset.ckey, v); vals[b.dataset.ckey] = v; draw(true); } catch { }
+  });
+  draw(false);
+  return sec;
 }
 
 let currentRules = null;

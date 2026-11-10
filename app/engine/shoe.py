@@ -19,17 +19,21 @@ class Shoe:
         shoe._cards = list(reversed(cards))
         shoe.total = len(cards)
         shoe._stacked = True
+        shoe.seen = []
         return shoe
 
     def shuffle(self) -> None:
         self._cards = [Card(r, s) for _ in range(self.decks) for s in SUITS for r in RANKS]
         self.rng.shuffle(self._cards)
         self.total = len(self._cards)
+        self.seen: list[Card] = []  # karty, które wyszły od tasowania (do liczenia)
 
     def draw(self) -> Card:
         if not self._cards:
             raise RuntimeError("But jest pusty")
-        return self._cards.pop()
+        card = self._cards.pop()
+        self.seen.append(card)
+        return card
 
     @property
     def remaining(self) -> int:

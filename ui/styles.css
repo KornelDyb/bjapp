@@ -25,6 +25,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }
 html, body { height: 100%; margin: 0; }
 body {
   display: grid;
@@ -219,3 +220,36 @@ kbd { font: 600 11px/1 "Inter", sans-serif; padding: 3px 6px; border-radius: 5px
 .saved { color: var(--success); font-weight: 500; }
 .warn { color: var(--warning); font-size: 13px; margin-top: 10px; }
 .btn.primary kbd { background: rgba(255,255,255,.22); color: #fff; }
+
+/* Pasek akcji (zawsze widoczny) */
+.controls { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+.controls .sep { width: 1px; height: 28px; background: var(--glass-border); margin: 0 4px; }
+.btn.on { border-color: var(--accent); background: rgba(124,92,255,.18); }
+.chip-btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+/* Liczenie */
+.count-live { border-color: rgba(124,92,255,.55); }
+.shuffle-note { color: var(--warning); font-size: 13px; font-weight: 500; }
+.modal-wrap { position: fixed; inset: 0; background: rgba(5,6,15,.6); display: grid; place-items: center; z-index: 10; backdrop-filter: blur(4px); }
+.modal { width: min(460px, 92vw); padding: 24px; display: flex; flex-direction: column; gap: 14px; animation: pop .2s ease both; }
+.modal h2 { margin: 0; font-size: 20px; }
+.quiz-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.quiz-fields label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-2); font-weight: 500; }
+.quiz-fields input { font: 600 22px/1 "Inter", sans-serif; font-variant-numeric: tabular-nums; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--glass-border); background: rgba(9,11,24,.8); color: var(--text); width: 100%; }
+.quiz-fields input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+.quiz-msg { display: flex; gap: 10px; align-items: flex-start; min-height: 0; }
+.quiz-msg:empty { display: none; }
+.quiz-msg.ok .fb-icon { background: rgba(74,222,128,.16); color: var(--success); }
+.quiz-msg.bad .fb-icon { background: rgba(255,107,129,.16); color: var(--error); }
+.quiz-actions { display: flex; justify-content: flex-end; }
+.info-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.info { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; align-items: flex-start; }
+.info h2 { margin: 0; font-size: 16px; }
+.info ul { margin: 0; padding-left: 18px; } .info li { margin: 4px 0; }
+.hilo { display: flex; gap: 10px; width: 100%; }
+.hilo div { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 10px; border-radius: 10px; background: rgba(9,11,24,.6); border: 1px solid var(--glass-border); }
+.hilo b { font-size: 22px; font-variant-numeric: tabular-nums; }
+.hilo span { color: var(--text-2); font-size: 13px; letter-spacing: .04em; }
+.formula { font-size: 18px; font-weight: 600; }
+.sec-title { margin: 12px 0 0; font-size: 15px; }
+.content > .settings + .settings { margin-top: 0; }

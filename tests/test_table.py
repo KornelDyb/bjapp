@@ -46,7 +46,7 @@ def test_correct_decision_counts_in_session(data_dir):
     t.new_round(5)
     r = t.act("S")
     assert r["feedback"]["correct"] is True
-    assert r["stats"] == {"hands": 1, "decisions": 1, "correct": 1, "accuracy": 1.0, "net": 5.0}
+    assert r["stats"].items() >= {"hands": 1, "decisions": 1, "correct": 1, "accuracy": 1.0, "net": 5.0}.items()
 
 
 def test_natural_blackjack_no_decisions(data_dir):
@@ -102,3 +102,78 @@ def test_feedback_is_fast(data_dir):
     t0 = time.perf_counter()
     t.act("S")
     assert time.perf_counter() - t0 < 0.1
+
+
+def make_count(order: str, every=3):
+    db = Database(db_path())
+    db.set_setting("count.every", json.dumps(every))
+    t = TableSession(db, rules_provider=lambda: Rules(), shoe_factory=lambda r: Shoe.stacked(parse(order)))
+    return t, db
+
+
+ROUND = "T 6 9 T 5 "   # gracz 19 stoi; krupier 6+T+5 = 21  (RC rundy: -1+1+0-1+1 = 0)
+
+
+def test_count_quiz_due_every_n_rounds(data_dir):
+    t, db = make_count(ROUND * 6, every=2)
+    assert t.quiz_due() is False  # 0 kart od tasowania
+    t.new_round(1); t.act("S")
+    assert t.quiz_due() is False  # 1 rozdanie
+    t.new_round(1); t.act("S")
+    assert t.quiz_due() is True   # 2 rozdania, 10 kart
+    r = t.answer_count(0, 0)
+    assert r["correct"] is True and r["running"] == 0
+    assert t.quiz_due() is False
+    with pytest.raises(IllegalMove):
+        t.answer_count(0, 0)  # nie było pytania
+
+
+def test_new_round_blocked_while_quiz_due(data_dir):
+    t, _ = make_count(ROUND * 4, every=1)
+    t.new_round(1); t.act("S")
+    with pytest.raises(IllegalMove, match="count"):
+        t.new_round(1)
+    t.answer_count(0, 0)
+    t.new_round(1)
+
+
+def test_quiz_disabled(data_dir):
+    t, _ = make_count(ROUND * 4, every=0)
+    t.new_round(1); t.act("S")
+    t.new_round(1); t.act("S")
+    assert t.quiz_due() is False
+
+
+def test_count_answer_recorded(data_dir):
+    t, db = make_count("2 3 4 T 8 " + ROUND * 3, every=1)   # gracz 2,4 vs 3, dobiera T = 16, stoi; krupier 3+8+...
+    t.new_round(1)
+    while t.game.phase == "player":
+        t.act("S")
+    rc = t.count()["running"]
+    r = t.answer_count(rc + 1, 0)
+    assert r["correct"] is False and r["rc_ok"] is False
+    row = rows(db, "SELECT true_rc, answer_rc, is_correct FROM count_checks")[0]
+    assert row == (rc, rc + 1, 0)
+    assert t._stats()["count_checks"] == 1 and t._stats()["count_correct"] == 0
+
+
+def test_true_count_at_start_recorded(data_dir):
+    t, db = make_count(ROUND * 3, every=0)
+    t.new_round(1); t.act("S")
+    t.new_round(1)
+    tcs = [r[0] for r in rows(db, "SELECT true_count_at_start FROM hands ORDER BY id")]
+    assert tcs[0] == 0 and tcs[1] is not None
+
+
+def test_state_includes_count_and_shuffle_flag(data_dir):
+    t, _ = make_count(ROUND * 2, every=0)
+    r = t.new_round(1)
+    assert set(r["count"]) >= {"running", "true", "decks_remaining", "cards_seen"}
+
+
+def test_status_restores_round_in_progress(data_dir):
+    t, _ = make("T 6 7 5 T 8")
+    assert t.status()["state"] is None
+    t.new_round(10)
+    st = t.status()["state"]
+    assert st["phase"] == "player" and st["hands"][0]["total"] == 17
