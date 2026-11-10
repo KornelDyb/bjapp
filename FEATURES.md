@@ -38,8 +38,21 @@ Otwarte pytania: brak (zasady konkretnego kasyna → BJ-02; reguła OBO do potwi
 Testy: tests/engine/ · Wizualizacja: docs/bj01-krupier.png
 
 ## BJ-02 Zasady stołu + strategia
-Status: ⬜ todo · Typ: logika · Zależy od: BJ-01
-Otwarte pytania: w jakim kasynie grasz i jakie są tam zasady? (+ weryfikacja założenia o domyślnych zasadach)
+Status: 👀 czeka na akceptację (ekran Ustawienia; logika ✅)
+Typ: logika + UI (ekran Ustawienia)
+Zależy od: BJ-01
+Kryteria akceptacji:
+- [x] Solver EV (dokładny, 6 talii, bez zwracania kart; tabele JSON z tools/build_strategy.py) liczy dla każdej sytuacji (twarde 4–21, miękkie 13–21, pary 2–A) × karta krupiera (2–A) EV ruchów S/H/D/P/R przy danych zasadach
+- [x] Dla zasad US (6 talii, S17, DAS, peek, bez poddania) tabela zgadza się z kanoniczną strategią podstawową w każdej komórce
+- [x] Znane różnice reguł: H17 → 11 vs A podwój, A7 vs 2 podwój, A8 vs 6 podwój; poddanie → 16 vs 9/10/A i 15 vs 10 poddaj; ENHC bez OBO → 11 vs 10 i 11 vs A dobierz
+- [x] EV z solvera zgadza się z symulacją na silniku (6 talii) w granicach 4,5 SE dla kontrolnych sytuacji
+- [x] `best_action(karty, karta krupiera, zasady, legalne ruchy)` wybiera najlepszy LEGALNY ruch (np. 3 karty = 11 → dobierz, nie podwój) i zwraca EV wszystkich ruchów
+- [x] Ściąga jako kody: H, S, D/Dh/Ds (podwój, inaczej dobierz/stój), P, R/Rh/Rs/Rp
+- [x] Zasady zapisywane w ustawieniach; domyślne europejskie (6 talii, S17, DAS, bez poddania, ENHC, 3:2, bez OBO); zmiana zasad → strategia przełącza się na właściwą tabelę (< 100 ms, cache)
+- [x] Błędne zasady → komunikat po ludzku, nic nie zapisane
+- [x] Ekran Ustawienia: formularz zasad, zapis, informacja „strategia przeliczona”; ostrzeżenie dla 1–2 talii (strategia liczona dla 4+ talii)
+Otwarte pytania: brak (zasady potwierdzone 10.11)
+Testy: tests/strategy/, tests/test_api.py, tests/test_ui_e2e.py · Wizualizacje: docs/bj02-strategia.png, docs/bj02-ustawienia.png
 
 ## BJ-03 Stół z korektą na żywo
 Status: ⬜ todo · Typ: UI · Zależy od: BJ-02

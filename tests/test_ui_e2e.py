@@ -44,3 +44,21 @@ def test_inter_font_loaded(page):
     page.wait_for_function("document.fonts.status === 'loaded'")
     assert page.evaluate("document.fonts.check('600 16px Inter')")
     assert page.evaluate("[...document.fonts].some(f => f.family.includes('Inter') && f.status === 'loaded')")
+
+
+def test_settings_change_rule_saves_and_updates_table(page):
+    page.wait_for_selector("text=Połączono · v0.1.0")
+    page.click('[data-screen="settings"]')
+    page.click('button[data-key="h17"][data-val="true"]')
+    page.wait_for_selector("#saved:not([hidden])")
+    assert page.get_attribute('button[data-key="h17"][data-val="true"]', "aria-checked") == "true"
+    page.click('[data-screen="table"]')
+    assert "dobiera na miękkich 17" in page.inner_text("#table-rules")
+
+
+def test_obo_option_only_without_hole_card(page):
+    page.wait_for_selector("text=Połączono · v0.1.0")
+    page.click('[data-screen="settings"]')
+    page.wait_for_selector('[data-key="enhc_obo"]')
+    page.click('button[data-key="hole_card"][data-val="\\"peek\\""]')
+    page.wait_for_selector('[data-key="enhc_obo"]', state="detached")

@@ -101,13 +101,13 @@ Cała logika w Pythonie i testowana; frontend tylko wyświetla i wysyła akcje p
 | Ostrzeżenie SmartScreen przy .exe | Opis w README; w trakcie budowy uruchamianie z kodu |
 
 **Założenia do sprawdzenia:**
-- Domyślne zasady: 6 talii, S17, DAS, bez poddania, ENHC, 3:2, penetracja 75% → BJ-02.
+- ~~Domyślne zasady~~ → potwierdzone 10.11: 6 talii, S17, DAS, bez poddania, ENHC, 3:2, penetracja 75%; przy BJ krupiera tracisz wszystkie stawki (bez OBO). Do sprawdzenia przy stole w kasynie.
 - Bet ramp: TC ≤ +1 → 1 j., +2 → 2, +3 → 4, ≥ +4 → 8 → BJ-06.
 - Pytanie kontrolne o count co 5–15 kart i przed każdą stawką → BJ-05.
 - „Twój styl” w symulacji = trafność z ostatnich 500 decyzji i mapa błędów → BJ-08.
 
 **Otwarte pytania:**
-- [ ] BJ-02: w jakim kasynie grasz i jakie są tam zasady?
+- [x] BJ-02: zasady europejskie z PRD; przy BJ krupiera tracisz wszystko (decyzja 10.11)
 - [ ] BJ-03: wyjaśnienie „dlaczego” jednym zdaniem czy rozwijane?
 - [ ] BJ-07: od ilu rozdań pokazywać mapę błędów (propozycja: 50)?
 
@@ -123,3 +123,5 @@ Cała logika w Pythonie i testowana; frontend tylko wyświetla i wysyła akcje p
 | 10.11.2026 | **Zmiana:** budowa w Claude Code w chmurze (Linux), nie na PC; okno pywebview i .exe weryfikowane na PC po `git pull` | Wybór użytkownika; logika i testy niezależne od systemu, UI podglądane w przeglądarce |
 | 10.11.2026 | Ścieżka danych: `%APPDATA%\TrenerBlackjack` na Windows, `~/.local/share/TrenerBlackjack` gdzie indziej, nadpisywalna `TRENER_BJ_DATA_DIR` | Testy i budowa w chmurze; decyzja Claude'a (techniczna) |
 | 10.11.2026 | Repo: `KornelDyb/bjapp` zamiast `trener-blackjack` | Wybór użytkownika (repo już założone) |
+| 10.11.2026 | Domyślne zasady europejskie; przy BJ krupiera (ENHC) tracisz wszystkie stawki, także dopłaty | Wybór użytkownika; ostrożniejsza strategia (np. 11 vs 10 bez podwojenia) |
+| 10.11.2026 | **Zmiana:** tabele strategii (JSON) wyliczone dokładnym solverem dla 6 talii (`tools/build_strategy.py`), nie przepisane; walidacja: kanoniczna tabela US komórka po komórce + symulacja na silniku | wizardofodds.com zablokowany w sieci sesji; model nieskończonej talii odbiegał od tabel 6-taliowych (A,2 vs 5), dokładny solver się zgadza; EV w każdej komórce posłuży do „dlaczego”. Decyzja Claude'a — do potwierdzenia |

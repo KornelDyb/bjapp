@@ -101,15 +101,15 @@ def test_blackjack_vs_dealer_blackjack_push():
 
 
 def test_enhc_dealer_blackjack_obo_loses_only_original_bet():
-    g = game("5 T 6 9 A")  # double: gracz dostaje 9 (=20), krupier T+A = BJ
+    g = game("5 T 6 9 A", enhc_obo=True)  # double: gracz dostaje 9 (=20), krupier T+A = BJ
     g.start_round(10)
     s = g.act("D")
     assert s["dealer"]["blackjack"]
     assert s["net"] == -10
 
 
-def test_enhc_dealer_blackjack_without_obo_loses_all():
-    g = game("5 T 6 9 A", enhc_obo=False)
+def test_enhc_dealer_blackjack_default_loses_all():
+    g = game("5 T 6 9 A")  # domyślnie (decyzja 10.11): tracisz wszystko
     g.start_round(10)
     assert g.act("D")["net"] == -20
 

@@ -9,7 +9,7 @@ class Rules:
     das: bool = True               # podwojenie po splicie
     surrender: bool = False        # poddanie (pierwszy ruch)
     hole_card: str = "enhc"        # "enhc" (bez zakrytej karty) | "peek"
-    enhc_obo: bool = True          # ENHC: przy BJ krupiera tracisz tylko stawkę początkową
+    enhc_obo: bool = False         # ENHC: True = przy BJ krupiera tracisz tylko stawkę początkową (OBO)
     blackjack_payout: float = 1.5
     max_hands: int = 4
     resplit_aces: bool = False
@@ -19,7 +19,7 @@ class Rules:
         if self.hole_card not in ("enhc", "peek"):
             raise ValueError("hole_card musi być 'enhc' albo 'peek'")
         if not 1 <= self.decks <= 8:
-            raise ValueError("Liczba talii: 1–8")
+            raise ValueError("Liczba talii musi być od 1 do 8")
         if not 0.3 <= self.penetration <= 0.95:
             raise ValueError("Penetracja: 30–95%")
 

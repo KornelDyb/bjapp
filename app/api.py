@@ -5,7 +5,9 @@ import logging
 
 from . import __version__
 from .paths import log_path
+from .engine.rules import Rules
 from .storage.db import Database
+from .strategy.solver import chart
 
 log = logging.getLogger("trener_bj")
 
@@ -57,6 +59,59 @@ class Api:
     @endpoint
     def set_setting(self, key, value):
         self._db.set_setting(self._check_key(key), json.dumps(value))
+
+    # ----- zasady stołu i strategia -----
+    EDITABLE = {
+        "decks": int, "h17": bool, "das": bool, "surrender": bool, "hole_card": str,
+        "enhc_obo": bool, "blackjack_payout": float, "penetration": float,
+    }
+    FIELD_NAMES = {"decks": "liczba talii", "penetration": "penetracja", "blackjack_payout": "wypłata za blackjacka",
+                   "hole_card": "zakryta karta krupiera"}
+
+    def _rules(self) -> Rules:
+        raw = self._db.get_setting("rules")
+        return Rules(**json.loads(raw)) if raw else Rules()
+
+    @staticmethod
+    def _warnings(rules: Rules) -> list[str]:
+        w = []
+        if rules.decks <= 2:
+            w.append("Strategia jest liczona dla 4–8 talii; przy 1–2 taliach kilka decyzji może się różnić.")
+        return w
+
+    @endpoint
+    def get_rules(self):
+        rules = self._rules()
+        return {"rules": rules.to_dict(), "warnings": self._warnings(rules)}
+
+    @endpoint
+    def set_rules(self, changes):
+        if not isinstance(changes, dict):
+            raise UserError("Zasady muszą być słownikiem.")
+        unknown = set(changes) - set(self.EDITABLE)
+        if unknown:
+            raise UserError(f"Nieznane zasady: {', '.join(sorted(unknown))}.")
+        clean = {}
+        for k, v in changes.items():
+            t = self.EDITABLE[k]
+            ok = isinstance(v, bool) if t is bool else (isinstance(v, (int, float)) and not isinstance(v, bool)
+                                                       if t in (int, float) else isinstance(v, t))
+            if not ok:
+                raise UserError(f"Zła wartość dla „{k}” ({self.FIELD_NAMES.get(k, k)}).")
+            clean[k] = t(v)
+        if "blackjack_payout" in clean and clean["blackjack_payout"] not in (1.5, 1.2, 1.0):
+            raise UserError("Wypłata za blackjacka: 3:2, 6:5 albo 1:1.")
+        try:
+            rules = Rules(**{**self._rules().to_dict(), **clean})
+        except ValueError as e:
+            msg = str(e).replace("hole_card musi być", "Zakryta karta krupiera: wybierz")
+            raise UserError(msg + ".") from None
+        self._db.set_setting("rules", json.dumps(rules.to_dict()))
+        return {"rules": rules.to_dict(), "warnings": self._warnings(rules)}
+
+    @endpoint
+    def get_strategy(self):
+        return {"chart": chart(self._rules())}
 
     @staticmethod
     def _check_key(key):
